@@ -29,9 +29,10 @@ class VideoAnalyzer:
         ret = True
         frame_count = 0
         while ret:
+            print(frame_count)
             ret, frame = self.cap.read()
             if not ret:
-                continue
+                break
             try:
                 image = cv2.resize(frame, (331, 331), interpolation=cv2.INTER_AREA)
                 segment.append(image)

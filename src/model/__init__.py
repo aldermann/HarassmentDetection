@@ -3,7 +3,7 @@ from keras.models import load_model
 import os
 import numpy as np
 from video import FRAME_INTERVAL
-
+os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
 class Model:
     def __init__ (self, debug=False):
         self.debug = debug
