@@ -1,56 +1,28 @@
 import os
 import cv2
 import time
+from flask import Flask, Response, request
 
-from model import Model, FRAME_INTERVAL
+from model import Model
+from video import VideoAnalyzer
 
 md = Model()
 
+vd = VideoAnalyzer(model=md)
 
-def add_predict(frame, predict):
-    action_mapping = {0: 'Abnormal', 1: 'Normal'}
-    color = (0, 255, 0)
-    if predict == 0:
-        color = (0, 0, 255)
-    height, width, _ = frame.shape
-    cv2.rectangle(frame, (0, 0), (width, height), color, 2)
-    cv2.putText(frame, action_mapping[predict], (10, 15),
-                cv2.FONT_HERSHEY_SIMPLEX, 1, color, thickness=2, lineType=2)
+vd.write_to_video()
+# app = Flask(__name__)
 
+# def gen(delay=0.02):
+#     for frame in vd.get_byte_stream():
+#         yield (b'--frame\r\nContent-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
+#         time.sleep(delay)
 
-fps_display_interval = 5  # frames
-frame_count = 0
+# @app.route("/stream")
+# def stream():
+#     dl = 0
+#     if request.args.get("delay") == "1":
+#         dl = 0.02
+#     return Response(gen(dl), mimetype='multipart/x-mixed-replace; boundary=frame')
 
-cap = cv2.VideoCapture('video.mp4')
-_, frame = cap.read()
-
-segment = []
-
-height, width, layers = frame.shape
-fourcc = cv2.VideoWriter_fourcc(*'MPEG')
-output_video = cv2.VideoWriter('output.avi', fourcc, 20.0,
-                               (width, height))
-predict = None
-ret = True
-frame_count = 0
-while ret:
-    ret, frame = cap.read()
-    if not ret:
-        continue
-    try:
-        image = cv2.resize(frame, (331, 331), interpolation=cv2.INTER_AREA)
-        segment.append(image)
-        frame_count += 1
-    except Exception as e:
-        continue
-
-    if len(segment) == FRAME_INTERVAL:
-        predict = md.predict(segment)
-    if predict is not None and frame_count % FRAME_INTERVAL < 6:
-        add_predict(frame, predict)
-    output_video.write(frame)
-
-# When everything is done, release the capture
-cap.release()
-output_video.release()
-cv2.destroyAllWindows()
+# app.run(port=3000)
